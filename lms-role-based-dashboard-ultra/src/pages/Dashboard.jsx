@@ -27,11 +27,11 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold">Welcome, {session.name} 👋</h1>
           <p className="text-gray-500 dark:text-gray-400">This dashboard adapts based on your role.</p>
         </div>
-        <div className="hidden sm:flex gap-2">
+        {/* comment <div className="hidden sm:flex gap-2">
           <span className="badge">Responsive</span>
           <span className="badge">RBAC</span>
           <span className="badge">Charts</span>
-        </div>
+        </div>*/}
       </div>
 
       {role === 'admin' ? <AdminDashboard /> : <StudentDashboard />}

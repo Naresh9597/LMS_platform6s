@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/RoleContext.jsx'
+import Galaxy from "../ReactBits/Galaxy/Galaxy.jsx";
 
 export default function Login() {
   const { login } = useAuth()
@@ -19,7 +20,10 @@ export default function Login() {
   }
 
   return (
+    
     <div className="min-h-[70vh] grid place-items-center">
+      <div className="absolute inset-0 -z-10">
+      </div>
       <div className="card p-6 w-full max-w-md">
         <h1 className="text-2xl font-bold">Login</h1>
         <p className="text-gray-500 dark:text-gray-400 mt-1">Use the mock credentials to sign in.</p>

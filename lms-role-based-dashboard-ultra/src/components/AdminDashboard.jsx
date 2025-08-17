@@ -1,5 +1,7 @@
 import React from "react";
 import { adminMetrics } from "../data/mock.js";
+
+
 import {
   LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip,
   ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar
@@ -22,19 +24,18 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       {/* KPIs */}
       {can(role, "kpis") && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="sticky top-0 z-20 bg-white/70 dark:bg-zinc-900/60 backdrop-blur-md rounded-2xl p-2 shadow"
-        >
-          <div className="grid-cards">
-            <KPI title="Active Users" value={adminMetrics.activeUsers} helper="+9% WoW" color="#a5b4fc" />
-            <KPI title="Completion Rate" value={adminMetrics.completionRate + "%"} helper="Target 80%" color="#86efac" />
-            <KPI title="Avg Session (min)" value={adminMetrics.avgSessionMins} helper="Last 7 days" color="#fcd34d" />
-            <KPI title="New Signups" value={adminMetrics.newSignups} helper="This week" color="#fca5a5" />
-          </div>
-        </motion.div>
+<motion.div 
+  className="grid-cards"
+  initial={{ opacity: 0, y: 50 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.6 }}
+>
+  <KPI title="Active Users" value={adminMetrics.activeUsers} helper="+9% WoW" color="#a5b4fc" />
+  <KPI title="Completion Rate" value={adminMetrics.completionRate + "%"} helper="Target 80%" color="#86efac" />
+  <KPI title="Avg Session (min)" value={adminMetrics.avgSessionMins} helper="Last 7 days" color="#fcd34d" />
+  <KPI title="New Signups" value={adminMetrics.newSignups} helper="This week" color="#fca5a5" />
+</motion.div>
+
       )}
 
       {/* Completion Trend */}
