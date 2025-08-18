@@ -40,3 +40,36 @@
 .scroll-snap-item {
   scroll-snap-align: start;
 }
+
+
+.soft-neon-border {
+  box-shadow:
+    0 0 5px rgba(200, 200, 255, 0.5),
+    0 0 10px rgba(200, 200, 255, 0.4),
+    0 0 20px rgba(200, 200, 255, 0.3);
+  border-radius: 1rem;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.soft-neon-border:hover {
+  box-shadow:
+    0 0 10px rgba(200, 200, 255, 0.6),
+    0 0 20px rgba(200, 200, 255, 0.5),
+    0 0 40px rgba(200, 200, 255, 0.4);
+}
+
+.soft-neon-border {
+  box-shadow:
+    0 0 6px rgba(255, 255, 255, 0.6),
+    0 0 12px rgba(255, 255, 255, 0.5),
+    0 0 24px rgba(255, 255, 255, 0.4);
+  border-radius: 1rem;
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.soft-neon-border:hover {
+  box-shadow:
+    0 0 12px rgba(255, 255, 255, 0.8),
+    0 0 24px rgba(255, 255, 255, 0.7),
+    0 0 40px rgba(255, 255, 255, 0.6);
+}

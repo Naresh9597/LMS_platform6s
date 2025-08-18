@@ -1,27 +1,46 @@
 import React from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/RoleContext.jsx'
-import SwitchRoleModal from './SwitchRoleModal.jsx'
-import useDarkMode from '../hooks/useDarkMode.js'
+import SwitchRoleModal from './SwitchRoleModal.jsx' 
+import ClickSpark from '../ReactBits/ClickSpark/ClickSpark.jsx'
 
 export default function Layout({ children }) {
   const { session, logout } = useAuth()
-  const [dark, setDark] = useDarkMode()
   const [switchOpen, setSwitchOpen] = React.useState(false)
   const nav = useNavigate()
 
   return (
+    <ClickSpark
+  sparkColor="#6366F1"
+  sparkCount={15}
+  sparkRadius={25}
+  duration={600}
+>
+  
     <div className="min-h-screen">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-white/70 dark:bg-zinc-900/70 backdrop-blur border-b dark:border-white/10">
         <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-          <Link to="/" className="font-extrabold text-xl">LMS<span className="text-indigo-600">Ultra</span></Link>
+          <Link to="/" className="font-extrabold text-xl">
+            Skill<span className="text-indigo-600">Bridge</span>
+          </Link>
+
           <div className="ml-auto flex items-center gap-2">
             {session ? (
               <>
                 <span className="badge">{session.role.toUpperCase()}</span>
-                <span className="hidden sm:inline text-sm opacity-70">Hi, {session.name}</span>
-                <button className="btn btn-outline rounded-xl" onClick={() => setSwitchOpen(true)}>Switch Role</button>
+                <span className="hidden sm:inline text-sm opacity-70">
+                  Hi, {session.name}
+                </span>
+
+                {/* Toggle Switch Role Modal */}
+                <button
+                  className="btn btn-outline rounded-xl"
+                  onClick={() => setSwitchOpen(prev => !prev)} // toggle open/close
+                >
+                  Switch Role
+                </button>
+
                 <button
                   className="btn btn-primary rounded-xl"
                   onClick={() => { logout(); nav('/login') }}
@@ -30,7 +49,7 @@ export default function Layout({ children }) {
                 </button>
               </>
             ) : (
-              <Link to="/login" className="btn btn-primary rounded-xl">Login</Link>
+              null
             )}
           </div>
         </div>
@@ -44,5 +63,6 @@ export default function Layout({ children }) {
       {/* Switch Role Modal */}
       <SwitchRoleModal open={switchOpen} onClose={() => setSwitchOpen(false)} />
     </div>
+    </ClickSpark>
   )
 }

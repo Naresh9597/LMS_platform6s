@@ -25,7 +25,7 @@ export default function Dashboard() {
       <div className="flex items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Welcome, {session.name} 👋</h1>
-          <p className="text-gray-500 dark:text-gray-400">This dashboard adapts based on your role.</p>
+          <p className="text-gray-500 dark:text-gray-400">Track your progress and celebrate every step.</p>
         </div>
         {/* comment <div className="hidden sm:flex gap-2">
           <span className="badge">Responsive</span>

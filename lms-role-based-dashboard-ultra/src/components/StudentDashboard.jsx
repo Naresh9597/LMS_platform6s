@@ -1,139 +1,202 @@
 import React from "react";
 import { studentData } from "../data/mock.js";
 import {
-  LineChart,
-  Line,
-  CartesianGrid,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
+  LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  AreaChart, Area, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from "recharts";
 import { can } from "../utils/rbac.js";
 import { useAuth } from "../context/RoleContext.jsx";
-import { motion } from "framer-motion";
+import ScrollReveal from "../ReactBits/ScrollReveal.jsx";
+import MagicBento from "../ReactBits/MagicBento.jsx";
+import KPITrack from "../ReactBits/KPITrack.jsx";
+
+
+/* ===== Color system (aligned with Admin Dashboard) ===== */
+const LINE_COLOR  = "#6366f1";  // Indigo-500
+const AREA_COLOR  = "#22c55e";  // Green-500
+const RADAR_COLOR = "#fcd34d";  // Amber-300
+const KPI_COLORS  = ["#a5b4fc", "#86efac", "#fcd34d", "#fca5a5"];
+
+/*
+===== Magic Bento wrapper: Spotlight + subtle scale on hover =====
+
+function MagicBento({ title, children, spotlightColor = "rgba(99, 102, 241, 0.18)", className = "" }) {
+  return (
+    <SpotlightCard
+      className={`relative rounded-2xl overflow-hidden border border-white/10 shadow-lg bg-white/70 dark:bg-zinc-900/60 backdrop-blur ${className}`}
+      spotlightColor={spotlightColor}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 220, damping: 20 }}
+        className="p-4"
+      >
+        {title ? <h3 className="font-semibold mb-2">{title}</h3> : null}
+        {children}
+      </motion.div>
+
+      // Soft highlight ring on hover
+      <div
+        className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 hover:opacity-100 transition-opacity duration-300"
+        style={{ boxShadow: "0 0 0 1px rgba(99,102,241,0.25) inset" }}
+      />
+    </SpotlightCard>
+  );
+}
+*/
+
+
 
 export default function StudentDashboard() {
   const { session } = useAuth();
   const role = session.role;
 
   const avgScore = Math.round(
-    studentData.progress.reduce((a, b) => a + b.score, 0) /
-      studentData.progress.length
+    studentData.progress.reduce((a, b) => a + b.score, 0) / studentData.progress.length
   );
   const totalMinutes = studentData.timeSpent.reduce((a, b) => a + b.minutes, 0);
 
   return (
     <div className="space-y-6">
-      {/* KPIs */}
+      {/* ===== KPIs (flow track) ===== */}
       {can(role, "kpis") && (
-        <div className="grid-cards">
-          <KPI title="Avg Weekly Score" value={avgScore + "%"} helper="Last 6 weeks" />
-          <KPI title="Time Spent" value={totalMinutes + " min"} helper="Total study time" />
-          <KPI title="Upcoming Tasks" value={studentData.deadlines.length} helper="Next 10 days" />
-          <KPI title="Quizzes Taken" value={studentData.quizHistory.length} helper="Recent" />
-        </div>
+        <KPITrack
+          items={[
+            { title: "Avg Weekly Score", value: `${avgScore}%`, helper: "Last 6 weeks", color: KPI_COLORS[0] },
+            { title: "Time Spent", value: `${totalMinutes} min`, helper: "Total study time", color: KPI_COLORS[1] },
+            { title: "Upcoming Tasks", value: studentData.deadlines.length, helper: "Next 10 days", color: KPI_COLORS[2] },
+            { title: "Quizzes Taken", value: studentData.quizHistory.length, helper: "Recent", color: KPI_COLORS[3] },
+          ]}
+        />
       )}
 
-      {/* Weekly Progress Chart */}
+      {/* ===== Weekly Progress ===== */}
       {can(role, "progressChart") && (
-        <MotionCard title="Weekly Progress">
+        <ScrollReveal>
+        <MagicBento title="Weekly Progress" spotlightColor="rgba(99, 102, 241, 0.16)">
+          
           <div className="h-72">
+            
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={studentData.progress}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis dataKey="week" stroke="#6b7280" />
                 <YAxis stroke="#6b7280" />
                 <Tooltip />
-                <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} />
+                <Line type="monotone" dataKey="score" stroke={LINE_COLOR} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </MotionCard>
+          
+        </MagicBento>
+        </ScrollReveal>
+        
       )}
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Study Time Chart */}
+        {/* ===== Study Time ===== */}
         {can(role, "timeSpentChart") && (
-          <MotionCard title="Study Time">
+          <ScrollReveal>
+          <MagicBento title="Study Time" spotlightColor="rgba(34, 197, 94, 0.14)">
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={studentData.timeSpent}>
                   <defs>
                     <linearGradient id="colorTime" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#22c55e" stopOpacity={0.6} />
-                      <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                      <stop offset="5%" stopColor={AREA_COLOR} stopOpacity={0.6} />
+                      <stop offset="95%" stopColor={AREA_COLOR} stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="week" stroke="#6b7280" />
                   <YAxis stroke="#6b7280" />
                   <Tooltip />
-                  <Area type="monotone" dataKey="minutes" stroke="#22c55e" fill="url(#colorTime)" />
+                  <Area type="monotone" dataKey="minutes" stroke={AREA_COLOR} fill="url(#colorTime)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          </MotionCard>
+          </MagicBento>
+          </ScrollReveal>
         )}
 
-        {/* Topic Mastery Chart */}
+        {/* ===== Topic Mastery ===== */}
         {can(role, "topicMasteryChart") && (
-          <MotionCard title="Topic Mastery">
+          <ScrollReveal>
+          <MagicBento title="Topic Mastery" spotlightColor="rgba(252, 211, 77, 0.18)">
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <RadarChart data={studentData.topicMastery}>
                   <PolarGrid stroke="#e5e7eb" />
                   <PolarAngleAxis dataKey="topic" stroke="#6b7280" />
                   <PolarRadiusAxis />
-                  <Radar name="Mastery" dataKey="mastery" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.4} />
+                  <Radar
+                    name="Mastery"
+                    dataKey="mastery"
+                    stroke={RADAR_COLOR}
+                    fill={RADAR_COLOR}
+                    fillOpacity={0.4}
+                  />
                   <Tooltip />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
-          </MotionCard>
+          </MagicBento>
+          </ScrollReveal>
         )}
       </div>
 
-      {/* Deadlines & Quiz History */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {can(role, "deadlinesTable") && <Deadlines />}
-        {can(role, "quizTable") && <QuizHistory />}
-      </div>
+     {/* ===== Deadlines & Quiz History ===== */}
+<div className="grid lg:grid-cols-2 gap-6">
+  {can(role, "deadlinesTable") && (
+    <ScrollReveal delay={0.1}>
+      <Deadlines />
+    </ScrollReveal>
+  )}
 
-      {/* Announcements */}
+  {can(role, "quizTable") && (
+    <ScrollReveal delay={0.3}>
+      <QuizHistory />
+    </ScrollReveal>
+  )}
+</div>
+
+      
+
+      {/* ===== Announcements ===== */}
+      <ScrollReveal>
       {can(role, "announcements") && <Announcements items={studentData.announcements} />}
+      </ScrollReveal>
     </div>
   );
 }
 
-/* Motion Card */
-function MotionCard({ title, children }) {
+
+/*
+---------- KPI Flowing Track ----------
+function KPITrack({ items }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="card p-4 shadow-md rounded-2xl bg-white/70 dark:bg-zinc-900/60 backdrop-blur"
-    >
-      <h3 className="font-semibold mb-2">{title}</h3>
-      <div>{children}</div>
-    </motion.div>
+    <div className="relative w-full overflow-hidden py-2">
+      <motion.div
+        className="flex gap-4"
+        animate={{ x: ["0%", "-50%"] }}
+        transition={{ repeat: Infinity, duration: 20, ease: "linear" }}
+      >
+        {[...items, ...items].map((kpi, i) => <KPI key={i} {...kpi} />)}
+      </motion.div>
+    </div>
   );
 }
 
-/* KPI Card */
-function KPI({ title, value, helper }) {
+---------- KPI Card (with light pastel BG + hover lift) ----------
+function KPI({ title, value, helper, color }) {
   return (
     <motion.div
-      className="kpi hover:shadow-lg transition rounded-xl p-4 bg-white/50 dark:bg-zinc-800/50"
-      whileHover={{ scale: 1.03 }}
+      whileHover={{ y: -4, scale: 1.02 }}
+      transition={{ type: "spring", stiffness: 250, damping: 18 }}
+      className="relative min-w-[220px] shrink-0 rounded-xl p-4 shadow-md border border-black/5"
+      style={{ background: `${color}30` }}
     >
       <div className="text-sm text-gray-500 dark:text-gray-400">{title}</div>
       <div className="text-3xl font-extrabold mt-1">{value}</div>
@@ -141,11 +204,12 @@ function KPI({ title, value, helper }) {
     </motion.div>
   );
 }
+*/
 
-/* Deadlines Table */
+/* ---------- Tables wrapped in MagicBento ---------- */
 function Deadlines() {
   return (
-    <MotionCard title="Upcoming Deadlines">
+    <MagicBento title="Upcoming Deadlines" spotlightColor="rgba(99, 102, 241, 0.12)">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-zinc-800">
@@ -157,7 +221,7 @@ function Deadlines() {
           </thead>
           <tbody>
             {studentData.deadlines.map(d => (
-              <tr key={d.id} className="hover:bg-gray-100 dark:hover:bg-white/10">
+              <tr key={d.id} className="hover:bg-gray-100/70 dark:hover:bg-white/10">
                 <Td>{d.course}</Td>
                 <Td>{d.task}</Td>
                 <Td>{d.due}</Td>
@@ -166,14 +230,13 @@ function Deadlines() {
           </tbody>
         </table>
       </div>
-    </MotionCard>
+    </MagicBento>
   );
 }
 
-/* Quiz History Table */
 function QuizHistory() {
   return (
-    <MotionCard title="Quiz History">
+    <MagicBento title="Quiz History" spotlightColor="rgba(34, 197, 94, 0.12)">
       <div className="overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 dark:bg-zinc-800">
@@ -185,7 +248,7 @@ function QuizHistory() {
           </thead>
           <tbody>
             {studentData.quizHistory.map(q => (
-              <tr key={q.id} className="hover:bg-gray-100 dark:hover:bg-white/10">
+              <tr key={q.id} className="hover:bg-gray-100/70 dark:hover:bg-white/10">
                 <Td>{q.course}</Td>
                 <Td>{q.score}</Td>
                 <Td>{q.date}</Td>
@@ -194,29 +257,27 @@ function QuizHistory() {
           </tbody>
         </table>
       </div>
-    </MotionCard>
+    </MagicBento>
   );
 }
 
-/* Announcements */
+/* ---------- Announcements ---------- */
 function Announcements({ items }) {
   return (
-    <div className="card overflow-hidden">
-      <div className="px-4 py-3 border-b dark:border-white/10 flex items-center justify-between">
-        <h3 className="font-semibold">Announcements</h3>
-      </div>
+    <MagicBento title="Announcements" spotlightColor="rgba(252, 211, 77, 0.12)">
       <div className="divide-y dark:divide-white/10">
         {items.map(a => (
-          <div key={a.id} className="px-4 py-3">
+          <div key={a.id} className="px-1 py-3">
             <div className="text-sm text-gray-500 dark:text-gray-400">{a.date}</div>
             <div className="font-semibold">{a.title}</div>
             <div className="text-sm">{a.text}</div>
           </div>
         ))}
       </div>
-    </div>
+    </MagicBento>
   );
 }
 
+/* ---------- Table cells ---------- */
 const Th = ({ children }) => <th className="text-left px-4 py-2 font-semibold">{children}</th>;
 const Td = ({ children }) => <td className="px-4 py-2">{children}</td>;
