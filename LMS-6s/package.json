@@ -36,7 +36,7 @@
     "postcss": "^8.4.47",
     "shadcn-ui": "^0.9.5",
     "tailwindcss": "^3.4.17",
-    "vite": "^5.4.2",
+    "vite": "^5.4.19",
     "vite-tsconfig-paths": "^5.1.4"
   }
 }
