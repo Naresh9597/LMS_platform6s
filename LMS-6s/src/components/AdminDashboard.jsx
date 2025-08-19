@@ -24,8 +24,6 @@ const AREA_COLOR = "#22c55e";
 const BAR_COLOR = "#fcd34d";
 
 
-
-
 export default function AdminDashboard() {
   const { session } = useAuth();
   const role = session.role;
