@@ -42,55 +42,104 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
 
   if (!open) return null;
 
-  // Send handler (fetch from backend)
- const send = async () => {
-  const text = input.trim();
-  if (!text) return;
+  // Send handler
+  const send = async () => {
+    const text = input.trim();
+    if (!text) return;
 
-  // Show user message immediately
-  setMessages((prev) => [...prev, { from: "user", type: "text", text }]);
-  setInput("");
+    setMessages((prev) => [...prev, { from: "user", type: "text", text }]);
+    setInput("");
 
-  try {
-    const res = await fetch("http://localhost:4000/api/chatbot/query", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, text }),
-    });
+    try {
+      const res = await fetch("http://localhost:4000/api/chatbot/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, text }),
+      });
 
-    if (!res.ok) throw new Error("Failed to fetch");
+      if (!res.ok) throw new Error("Failed to fetch");
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.type === "text") {
-      setMessages((prev) => [...prev, { from: "bot", type: "text", text: data.text }]);
-    } else if (data.type === "chart") {
+      // Auto-wrap student metrics if returned
+      if (data.progress || data.timeSpent || data.topicMastery) {
+        const charts = [];
+
+        if (data.progress?.length) {
+          charts.push({
+            type: "line",
+            title: "Weekly Progress",
+            data: data.progress,
+            dataKey: "score",
+            xKey: "week",
+            strokeColor: "#6366f1",
+          });
+        }
+
+        if (data.timeSpent?.length) {
+          charts.push({
+            type: "area",
+            title: "Study Time",
+            data: data.timeSpent,
+            dataKey: "minutes",
+            xKey: "week",
+            strokeColor: "#22c55e",
+          });
+        }
+
+        if (data.topicMastery?.length) {
+          charts.push({
+            type: "radar",
+            title: "Topic Mastery",
+            data: data.topicMastery,
+            dataKey: "mastery",
+            angleKey: "topic",
+            strokeColor: "#fcd34d",
+          });
+        }
+
+        charts.forEach((chart) => {
+          setMessages((prev) => [
+            ...prev,
+            { from: "bot", type: "chart", chart },
+          ]);
+        });
+
+        return;
+      }
+
+      // For regular text or backend-provided chart
+      if (data.type === "text") {
+        setMessages((prev) => [...prev, { from: "bot", type: "text", text: data.text }]);
+      } else if (data.type === "chart") {
+        setMessages((prev) => [
+          ...prev,
+          { from: "bot", type: "chart", chart: data.chart },
+        ]);
+      }
+    } catch (err) {
+      console.error(err);
       setMessages((prev) => [
         ...prev,
-        { from: "bot", type: "chart", chart: { type: data.chart.type, data: data.chart.data } },
+        { from: "bot", type: "text", text: "Error fetching response from server." },
       ]);
     }
-  } catch (err) {
-    console.error(err);
-    setMessages((prev) => [
-      ...prev,
-      { from: "bot", type: "text", text: "Error fetching response from server." },
-    ]);
-  }
-};
-
+  };
 
   // Chart renderer
   const renderChart = (m) => {
-    switch (m.chart.type) {
+    const chart = m.chart;
+    if (!chart?.data || !chart.data.length) return <div>No data to display</div>;
+
+    switch (chart.type) {
       case "line":
         return (
           <ResponsiveContainer height={250}>
             <LineChart
-              data={m.chart.data}
-              dataKey={m.chart.data[0]?.score ? "score" : "users"}
-              xLabel={m.chart.data[0]?.week ? "week" : "day"}
-              strokeColor="#6366f1"
+              data={chart.data}
+              dataKey={chart.dataKey || "score"}
+              xLabel={chart.xKey || "week"}
+              strokeColor={chart.strokeColor || "#6366f1"}
               strokeWidth={2}
               dot={false}
             />
@@ -100,10 +149,10 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
         return (
           <ResponsiveContainer height={250}>
             <AreaChart
-              data={m.chart.data}
-              dataKey={m.chart.data[0]?.minutes ? "minutes" : "rate"}
-              xLabel={m.chart.data[0]?.week ? "week" : "day"}
-              strokeColor="#22c55e"
+              data={chart.data}
+              dataKey={chart.dataKey || "minutes"}
+              xLabel={chart.xKey || "week"}
+              strokeColor={chart.strokeColor || "#22c55e"}
               gradientId="colorTime"
             />
           </ResponsiveContainer>
@@ -112,10 +161,10 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
         return (
           <ResponsiveContainer height={250}>
             <BarChart
-              data={m.chart.data}
-              dataKey={m.chart.data[0]?.count ? "count" : "users"}
-              xLabel={m.chart.data[0]?.bucket ? "bucket" : "day"}
-              fillColor="#fcd34d"
+              data={chart.data}
+              dataKey={chart.dataKey || "count"}
+              xLabel={chart.xKey || "day"}
+              fillColor={chart.strokeColor || "#fcd34d"}
               radius={[8, 8, 0, 0]}
             />
           </ResponsiveContainer>
@@ -124,7 +173,7 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
         return (
           <ResponsiveContainer height={250}>
             <PieChart
-              data={m.chart.data}
+              data={chart.data}
               dataKey="value"
               colors={PIE_COLORS}
               outerRadius={90}
@@ -135,28 +184,27 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
         return (
           <ResponsiveContainer height={250}>
             <RadarChart
-              data={m.chart.data}
-              dataKey="mastery"
-              angleKey="topic"
+              data={chart.data}
+              dataKey={chart.dataKey || "mastery"}
+              angleKey={chart.angleKey || "topic"}
               name="Mastery"
-              strokeColor="#8b5cf6"
-              fillColor="#8b5cf6"
+              strokeColor={chart.strokeColor || "#fcd34d"}
+              fillColor={chart.strokeColor || "#fcd34d"}
               fillOpacity={0.6}
             />
           </ResponsiveContainer>
         );
       default:
-        return null;
+        return <div>Unsupported chart type</div>;
     }
   };
 
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center bg-black/30">
-      {/* Chat box */}
       <div className="mt-[5rem] w-full max-w-3xl mx-2 animate-fade-in">
         <div className="card overflow-hidden shadow-2xl rounded-2xl">
           {/* Header */}
-          <div className="px-4 py-2 border-b dark:border-white/10 flex items-center justify-between bg-white/70 dark:bg-zinc-900/70 backdrop-blur">
+          <div className="px-4 py-2 border-b flex items-center justify-between bg-white/70 backdrop-blur">
             <div className="font-semibold">Assistant</div>
             <button className="btn btn-ghost" onClick={onClose}>
               ✕
@@ -166,7 +214,7 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
           {/* Thread */}
           <div
             ref={threadRef}
-            className="max-h-[60vh] overflow-y-auto p-4 space-y-3 bg-white dark:bg-zinc-900"
+            className="max-h-[60vh] overflow-y-auto p-4 space-y-3 bg-white"
           >
             {messages.map((m, i) => (
               <div
@@ -177,15 +225,17 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
                   <div
                     className={
                       m.from === "user"
-                        ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[75%]"
-                        : "bg-black/5 dark:bg-white/10 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[75%]"
+                        ? "bg-indigo-500 text-white rounded-2xl rounded-tr-sm px-4 py-2 max-w-[75%]"
+                        : "bg-gray-200 rounded-2xl rounded-tl-sm px-4 py-2 max-w-[75%]"
                     }
                   >
                     {m.text}
                   </div>
                 ) : (
-                  <div className="bg-black/5 dark:bg-white/10 rounded-2xl px-2 py-2 w-[90%]">
-                    <div className="text-xs font-medium px-2 pb-1 opacity-70">Chart</div>
+                  <div className="bg-gray-200 rounded-2xl px-2 py-2 w-[90%]">
+                    <div className="text-xs font-medium px-2 pb-1 opacity-70">
+                      {m.chart.title || "Chart"}
+                    </div>
                     <div className="h-56 w-full">{renderChart(m)}</div>
                   </div>
                 )}
@@ -194,7 +244,7 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t dark:border-white/10 flex gap-2 bg-white dark:bg-zinc-900">
+          <div className="p-3 border-t flex gap-2 bg-white">
             <input
               className="input flex-1"
               placeholder="Type a message..."

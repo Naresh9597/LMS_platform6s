@@ -24,21 +24,7 @@ export default function AdminDashboard() {
   const name = sessionStorage.getItem("name");
   const token = sessionStorage.getItem("token");
 
-  const [metrics, setMetrics] = useState({
-  activeUsers: 0,
-  completionRate: 0,
-  avgSessionMins: 0,
-  newSignups: 0,
-  completionTrend: [],
-  weeklyActive: [],
-  courseDistribution: [],
-  ratingBuckets: [],
-  courses: [],
-  leaderboard: [],
-  announcements: [],
-  topCourses: [],
-});
-
+  const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

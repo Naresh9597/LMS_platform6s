@@ -48,9 +48,15 @@ export default function StudentDashboard() {
           throw new Error(data.error || "Failed to load student data");
         }
 
-        setStudentData(data);
+        // ✅ Backend returns an array, pick the first student
+        if (Array.isArray(data) && data.length > 0) {
+          setStudentData(data[0]);
+        } else {
+          setStudentData(null);
+        }
       } catch (err) {
         console.error("Error fetching student data:", err.message);
+        setStudentData(null);
       } finally {
         setLoading(false);
       }
@@ -59,13 +65,28 @@ export default function StudentDashboard() {
     fetchData();
   }, [token, role]);
 
-  if (loading) return <p className="text-center">Loading student dashboard...</p>;
-  if (!studentData) return <p className="text-center text-red-500">Failed to load student dashboard.</p>;
+  if (loading)
+    return <p className="text-center">Loading student dashboard...</p>;
+  if (!studentData)
+    return (
+      <p className="text-center text-red-500">
+        No student data available.
+      </p>
+    );
 
-  const avgScore = Math.round(
-    studentData.progress.reduce((a, b) => a + b.score, 0) / studentData.progress.length
-  );
-  const totalMinutes = studentData.timeSpent.reduce((a, b) => a + b.minutes, 0);
+  // Safe calculations
+  const avgScore =
+    studentData.progress?.length > 0
+      ? Math.round(
+          studentData.progress.reduce((a, b) => a + b.score, 0) /
+            studentData.progress.length
+        )
+      : 0;
+
+  const totalMinutes =
+    studentData.timeSpent?.length > 0
+      ? studentData.timeSpent.reduce((a, b) => a + b.minutes, 0)
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -73,17 +94,40 @@ export default function StudentDashboard() {
       {can(role, "kpis") && (
         <KPITrack
           items={[
-            { title: "Avg Weekly Score", value: `${avgScore}%`, helper: "Last 6 weeks", color: KPI_COLORS[0] },
-            { title: "Time Spent", value: `${totalMinutes} min`, helper: "Total study time", color: KPI_COLORS[1] },
-            { title: "Upcoming Tasks", value: studentData.deadlines.length, helper: "Next 10 days", color: KPI_COLORS[2] },
-            { title: "Quizzes Taken", value: studentData.quizHistory.length, helper: "Recent", color: KPI_COLORS[3] },
+            {
+              title: "Avg Weekly Score",
+              value: `${avgScore}%`,
+              helper: "Last 6 weeks",
+              color: KPI_COLORS[0],
+            },
+            {
+              title: "Time Spent",
+              value: `${totalMinutes} min`,
+              helper: "Total study time",
+              color: KPI_COLORS[1],
+            },
+            {
+              title: "Upcoming Tasks",
+              value: studentData.deadlines?.length || 0,
+              helper: "Next 10 days",
+              color: KPI_COLORS[2],
+            },
+            {
+              title: "Quizzes Taken",
+              value: studentData.quizHistory?.length || 0,
+              helper: "Recent",
+              color: KPI_COLORS[3],
+            },
           ]}
         />
       )}
 
       {/* Weekly Progress */}
-      {can(role, "progressChart") && (
-        <MagicBento title="Weekly Progress" spotlightColor="rgba(99, 102, 241, 0.16)">
+      {can(role, "progressChart") && studentData.progress?.length > 0 && (
+        <MagicBento
+          title="Weekly Progress"
+          spotlightColor="rgba(99, 102, 241, 0.16)"
+        >
           <ScrollReveal>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -104,8 +148,11 @@ export default function StudentDashboard() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Study Time */}
-        {can(role, "timeSpentChart") && (
-          <MagicBento title="Study Time" spotlightColor="rgba(34, 197, 94, 0.14)">
+        {can(role, "timeSpentChart") && studentData.timeSpent?.length > 0 && (
+          <MagicBento
+            title="Study Time"
+            spotlightColor="rgba(34, 197, 94, 0.14)"
+          >
             <ScrollReveal>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
@@ -124,38 +171,48 @@ export default function StudentDashboard() {
         )}
 
         {/* Topic Mastery */}
-        {can(role, "topicMasteryChart") && (
-          <MagicBento title="Topic Mastery" spotlightColor="rgba(252, 211, 77, 0.18)">
-            <ScrollReveal>
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart
-                    data={studentData.topicMastery}
-                    dataKey="mastery"
-                    angleKey="topic"
-                    name="Mastery"
-                    strokeColor={RADAR_COLOR}
-                    fillColor={RADAR_COLOR}
-                    fillOpacity={0.4}
-                    height={300}
-                  />
-                </ResponsiveContainer>
-              </div>
-            </ScrollReveal>
-          </MagicBento>
-        )}
+        {can(role, "topicMasteryChart") &&
+          studentData.topicMastery?.length > 0 && (
+            <MagicBento
+              title="Topic Mastery"
+              spotlightColor="rgba(252, 211, 77, 0.18)"
+            >
+              <ScrollReveal>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart
+                      data={studentData.topicMastery}
+                      dataKey="mastery"
+                      angleKey="topic"
+                      name="Mastery"
+                      strokeColor={RADAR_COLOR}
+                      fillColor={RADAR_COLOR}
+                      fillOpacity={0.4}
+                      height={300}
+                    />
+                  </ResponsiveContainer>
+                </div>
+              </ScrollReveal>
+            </MagicBento>
+          )}
       </div>
 
       {/* Deadlines & Quiz History */}
       <div className="grid lg:grid-cols-2 gap-6">
-        {can(role, "deadlinesTable") && <Deadlines deadlines={studentData.deadlines} />}
-        {can(role, "quizTable") && <QuizHistory quizHistory={studentData.quizHistory} />}
+        {can(role, "deadlinesTable") &&
+          studentData.deadlines?.length > 0 && (
+            <Deadlines deadlines={studentData.deadlines} />
+          )}
+        {can(role, "quizTable") && studentData.quizHistory?.length > 0 && (
+          <QuizHistory quizHistory={studentData.quizHistory} />
+        )}
       </div>
 
       {/* Announcements */}
-      {can(role, "announcements") && (
-        <Announcements items={studentData.announcements} />
-      )}
+      {can(role, "announcements") &&
+        studentData.announcements?.length > 0 && (
+          <Announcements items={studentData.announcements} />
+        )}
     </div>
   );
 }
@@ -163,7 +220,10 @@ export default function StudentDashboard() {
 /* ---------- Tables ---------- */
 function Deadlines({ deadlines }) {
   return (
-    <MagicBento title="Upcoming Deadlines" spotlightColor="rgba(99, 102, 241, 0.12)">
+    <MagicBento
+      title="Upcoming Deadlines"
+      spotlightColor="rgba(99, 102, 241, 0.12)"
+    >
       <ScrollReveal>
         <div>
           <table className="min-w-full text-sm">
@@ -177,7 +237,7 @@ function Deadlines({ deadlines }) {
             <tbody>
               {deadlines.map((d) => (
                 <motion.tr
-                  key={d.id}
+                  key={d._id || d.id}
                   className="hover:bg-gray-100/70"
                   whileHover={{ scale: 1.01 }}
                 >
@@ -196,7 +256,10 @@ function Deadlines({ deadlines }) {
 
 function QuizHistory({ quizHistory }) {
   return (
-    <MagicBento title="Quiz History" spotlightColor="rgba(34, 197, 94, 0.12)">
+    <MagicBento
+      title="Quiz History"
+      spotlightColor="rgba(34, 197, 94, 0.12)"
+    >
       <ScrollReveal>
         <div>
           <table className="min-w-full text-sm">
@@ -210,7 +273,7 @@ function QuizHistory({ quizHistory }) {
             <tbody>
               {quizHistory.map((q) => (
                 <motion.tr
-                  key={q.id}
+                  key={q._id || q.id}
                   className="hover:bg-gray-100/70"
                   whileHover={{ scale: 1.01 }}
                 >
@@ -231,6 +294,4 @@ function QuizHistory({ quizHistory }) {
 const Th = ({ children }) => (
   <th className="text-left px-4 py-2 font-semibold">{children}</th>
 );
-const Td = ({ children }) => (
-  <td className="px-4 py-2">{children}</td>
-);
+const Td = ({ children }) => <td className="px-4 py-2">{children}</td>;

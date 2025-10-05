@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-
+const connectDB = require('./config/db');
+connectDB();
 
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -9,6 +10,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const courseRoutes = require("./routes/courseRoutes");
 const studentCourseRoutes = require("./routes/studentCourseRoutes");
 const chatbotRoutes =require("./routes/chatbotRoutes");
+
 
 const app = express();
 app.use(cors());
@@ -24,3 +26,4 @@ app.use('/api/chatbot', chatbotRoutes);
 
 const PORT = 4000;
 app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
