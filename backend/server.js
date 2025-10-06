@@ -21,7 +21,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/courses", courseRoutes);
-app.use("/api/student/courses", studentCourseRoutes);
+app.use("/api/student/", studentCourseRoutes);
 app.use('/api/chatbot', chatbotRoutes);
 
 const PORT = 4000;

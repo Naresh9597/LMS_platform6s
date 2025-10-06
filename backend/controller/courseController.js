@@ -1,45 +1,36 @@
-const AdminMetrics = require("../models/AdminMetrics");
+// controller/adminCourseController.js
+const Course = require("../models/Course");
 
+// Get all courses
 const getCourses = async (req, res) => {
   try {
-    const metrics = await AdminMetrics.findOne();
-    res.json(metrics ? metrics.courses : []);
+    const courses = await Course.find().sort({ createdAt: -1 });
+    res.json(courses);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// Add a new course
 const addCourse = async (req, res) => {
-  const { title, enrollments = 0, completion = 0, rating = 0 } = req.body;
-  if (!title) return res.status(400).json({ error: "Course title required" });
-
   try {
-    const metrics = await AdminMetrics.findOne();
-    if (!metrics) return res.status(404).json({ error: "Admin metrics not found" });
+    const { title } = req.body;
+    if (!title) return res.status(400).json({ error: "Title is required" });
 
-    const newCourse = { id: Date.now(), title, enrollments, completion, rating };
-    metrics.courses.push(newCourse);
-    await metrics.save();
-
-    res.status(201).json(newCourse);
+    const course = await Course.create({ title });
+    res.status(201).json(course);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+// Delete a course
 const deleteCourse = async (req, res) => {
-  const { id } = req.params;
   try {
-    const metrics = await AdminMetrics.findOne();
-    if (!metrics) return res.status(404).json({ error: "Admin metrics not found" });
-
-    const courseIndex = metrics.courses.findIndex(c => c.id == id);
-    if (courseIndex === -1) return res.status(404).json({ error: "Course not found" });
-
-    metrics.courses.splice(courseIndex, 1);
-    await metrics.save();
-
-    res.json({ message: "Course deleted" });
+    const { id } = req.params;
+    const course = await Course.findByIdAndDelete(id);
+    if (!course) return res.status(404).json({ error: "Course not found" });
+    res.status(204).send();
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

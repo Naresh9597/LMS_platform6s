@@ -21,16 +21,19 @@ export default function AdminCourses() {
   };
 
   const handleAddCourse = async () => {
-    if (!newCourse) return;
+    if (!newCourse.trim()) return; // prevent empty titles
     try {
       const res = await fetch("http://localhost:4000/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newCourse }),
+        body: JSON.stringify({ title: newCourse }),
       });
       if (res.ok) {
         setNewCourse("");
         fetchCourses(); // refresh after adding
+      } else {
+        const errorData = await res.json();
+        console.error("Error adding course:", errorData.error);
       }
     } catch (err) {
       console.error("Error adding course:", err.message);
@@ -43,6 +46,10 @@ export default function AdminCourses() {
         method: "DELETE",
       });
       if (res.ok) fetchCourses(); // refresh after delete
+      else {
+        const errorData = await res.json();
+        console.error("Error deleting course:", errorData.error);
+      }
     } catch (err) {
       console.error("Error deleting course:", err.message);
     }
@@ -57,13 +64,13 @@ export default function AdminCourses() {
           <ul className="space-y-2">
             {courses.map((course) => (
               <li
-                key={course.id}
+                key={course._id} // use MongoDB _id as key
                 className="flex justify-between p-2 border rounded"
               >
-                {course.name}
+                {course.title} {/* show title */}
                 <button
                   className="bg-red-500 text-white px-3 py-1 rounded"
-                  onClick={() => handleDeleteCourse(course.id)}
+                  onClick={() => handleDeleteCourse(course._id)}
                 >
                   Delete
                 </button>
@@ -81,7 +88,7 @@ export default function AdminCourses() {
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Course name"
+            placeholder="Course title"
             value={newCourse}
             onChange={(e) => setNewCourse(e.target.value)}
             className="border px-2 py-1 rounded flex-1"
