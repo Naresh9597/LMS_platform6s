@@ -36,7 +36,7 @@ export default function AdminDashboard() {
       }
 
       try {
-        const res = await fetch("http://localhost:4000/api/admin/metrics", {
+        const res = await fetch("https://lms-mern-s8k6.onrender.com/api/admin/metrics", {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

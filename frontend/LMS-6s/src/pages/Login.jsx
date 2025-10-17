@@ -28,7 +28,7 @@ export default function Login() {
     const creds = role === "student" ? student : admin;
 
     try {
-      const res = await fetch("http://localhost:4000/api/auth/login", {
+      const res = await fetch("https://lms-mern-s8k6.onrender.com/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

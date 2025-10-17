@@ -14,15 +14,15 @@ export default function StudentCourses() {
     setLoading(true);
     try {
       // Fetch all courses
-      const resCourses = await fetch("http://localhost:4000/api/courses");
+      const resCourses = await fetch("https://lms-mern-s8k6.onrender.com/api/courses");
       const allCourses = await resCourses.json();
 
       // Fetch student's enrolled courses
-      const resEnrolled = await fetch("http://localhost:4000/api/student/enrolled");
+      const resEnrolled = await fetch("https://lms-mern-s8k6.onrender.com/api/student/enrolled");
       const enrolled = await resEnrolled.json();
 
       // Fetch student's completed courses
-      const resCompleted = await fetch("http://localhost:4000/api/student/completed");
+      const resCompleted = await fetch("https://lms-mern-s8k6.onrender.com/api/student/completed");
       const completed = await resCompleted.json();
 
       // Available = all courses - enrolled - completed
@@ -45,7 +45,7 @@ const available = allCourses.filter(
   const handleEnroll = async (course) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/student/enroll/${course._id}`,
+        `https://lms-mern-s8k6.onrender.com/api/student/enroll/${course._id}`,
         { method: "POST" }
       );
       if (res.ok) fetchCourses();
@@ -57,7 +57,7 @@ const available = allCourses.filter(
   const handleComplete = async (course) => {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/student/complete/${course._id}`,
+        `https://lms-mern-s8k6.onrender.com/api/student/complete/${course._id}`,
         { method: "POST" }
       );
       if (res.ok) fetchCourses();

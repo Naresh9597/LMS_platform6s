@@ -11,7 +11,7 @@ export default function AdminCourses() {
 
   const fetchCourses = async () => {
     try {
-      const res = await fetch("http://localhost:4000/api/courses");
+      const res = await fetch("https://lms-mern-s8k6.onrender.com/api/courses");
       const data = await res.json();
       if (res.ok) setCourses(data);
       else console.error(data.error);
@@ -23,7 +23,7 @@ export default function AdminCourses() {
   const handleAddCourse = async () => {
     if (!newCourse.trim()) return; // prevent empty titles
     try {
-      const res = await fetch("http://localhost:4000/api/courses", {
+      const res = await fetch("https://lms-mern-s8k6.onrender.com/api/courses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newCourse }),
@@ -42,7 +42,7 @@ export default function AdminCourses() {
 
   const handleDeleteCourse = async (id) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/courses/${id}`, {
+      const res = await fetch(`https://lms-mern-s8k6.onrender.com/api/courses/${id}`, {
         method: "DELETE",
       });
       if (res.ok) fetchCourses(); // refresh after delete

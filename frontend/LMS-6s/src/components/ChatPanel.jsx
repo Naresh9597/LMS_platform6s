@@ -51,7 +51,7 @@ export default function ChatPanel({ open, onClose, seed = "" }) {
     setInput("");
 
     try {
-      const res = await fetch("http://localhost:4000/api/chatbot/query", {
+      const res = await fetch("https://lms-mern-s8k6.onrender.com/api/chatbot/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ role, text }),
