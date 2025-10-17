@@ -30,10 +30,10 @@
     "recharts": "^2.12.7",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "vite": "^5.4.19"
+    "vite": "^5.4.19",
+    "@vitejs/plugin-react": "^4.3.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "shadcn-ui": "^0.9.5",
