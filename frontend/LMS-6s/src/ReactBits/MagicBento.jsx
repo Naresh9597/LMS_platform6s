@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import SpotlightCard from "./SpotlightCard.jsx";
+import SpotlightCard from "./SpotLightCard.jsx";
 import { Badge } from "../components/ui/badge.jsx";
 
 export default function MagicBento({ title, badge, children, spotlightColor, className = "" }) {
